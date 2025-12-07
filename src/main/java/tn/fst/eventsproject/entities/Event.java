@@ -16,14 +16,14 @@ import java.util.Set;
 public class Event implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    int idEvent;
-    String description;
-    LocalDate dateDebut;
-    LocalDate dateFin;
-    float cout;
+    private int idEvent;
+    private String description;
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
+    private float cout;
     @ManyToMany(mappedBy = "events")
-    Set<Participant> participants;
+    private Set<Participant> participants;
     @OneToMany(fetch = FetchType.EAGER)
-    Set<Logistics> logistics;
+    private Set<Logistics> logistics;
 
 }
