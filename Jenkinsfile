@@ -14,8 +14,8 @@ pipeline {
   stages {
     stage('Récupération du projet (Git)') {
       steps {
-        // Checkout using SSH credential
-        git branch: 'main', url: 'git@github.com:AzizOuannes/CI-CD-for-Online-Event-Management-Application.git', credentialsId: "${GIT_CREDENTIALS}"
+        // Checkout via HTTPS (public repo) — no credentials needed
+        git branch: 'main', url: 'https://github.com/AzizOuannes/CI-CD-for-Online-Event-Management-Application.git'
       }
     }
 
@@ -77,7 +77,8 @@ pipeline {
     stage('Dépôt de l\'image sur DockerHub') {
       steps {
         script {
-          docker.withRegistry('https://registry.hub.docker.com', "${DOCKERHUB_CREDENTIALS}") {
+          // Use official Docker Hub registry endpoint for login/push
+          docker.withRegistry('https://index.docker.io/v1/', "${DOCKERHUB_CREDENTIALS}") {
             // push the build-id tag
             sh "docker push ${env.BUILT_IMAGE}"
             // also tag and push 'latest'
@@ -91,8 +92,17 @@ pipeline {
     stage('Démarrage (docker-compose: app + MySQL)') {
       steps {
         // This expects a docker-compose.yml that starts the app and a MySQL container
-        // The agent running this stage must have docker-compose installed and access to Docker daemon
-        sh 'docker-compose up -d --build'
+        // Prefer Docker Compose v2 ('docker compose'); fall back to v1 ('docker-compose')
+        sh '''
+          if docker compose version >/dev/null 2>&1; then
+            docker compose up -d --build
+          elif command -v docker-compose >/dev/null 2>&1; then
+            docker-compose up -d --build
+          else
+            echo "Docker Compose not found. Install Docker Compose v2 (docker compose plugin) or v1 (docker-compose)."
+            exit 127
+          fi
+        '''
       }
     }
   }
