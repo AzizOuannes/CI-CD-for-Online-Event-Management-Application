@@ -94,6 +94,33 @@ pipeline {
         // This expects a docker-compose.yml that starts the app and a MySQL container
         // Prefer Docker Compose v2 ('docker compose'); fall back to v1 ('docker-compose')
         sh '''
+          # Choose an available host port for the app if APP_PORT is not provided
+          choose_port() {
+            for p in 8081 8082 8083 8090; do
+              if ! ss -ltn | awk '{print $4}' | grep -qE ":$p$"; then
+                echo "$p"
+                return 0
+              fi
+            done
+            echo "No free ports found in candidate list" >&2
+            return 1
+          }
+
+          if [ -z "$APP_PORT" ]; then
+            APP_PORT=$(choose_port) || exit 1
+            export APP_PORT
+            echo "Using APP_PORT=$APP_PORT"
+          else
+            echo "APP_PORT is preset to $APP_PORT"
+          fi
+
+          # Stop any existing app container that may be holding the port to avoid conflicts
+          if docker ps -a --format '{{.Names}}' | grep -q '^events_app$'; then
+            echo "Stopping existing events_app container to free port..."
+            docker stop events_app || true
+            docker rm events_app || true
+          fi
+
           if docker compose version >/dev/null 2>&1; then
             docker compose up -d --build
           elif command -v docker-compose >/dev/null 2>&1; then

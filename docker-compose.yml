@@ -13,18 +13,25 @@ services:
       - db_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   app:
     image: azizouannes/eventsproject:latest
     container_name: events_app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "${APP_PORT:-8081}:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/eventsdb
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/eventsdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: eventsuser
       SPRING_DATASOURCE_PASSWORD: eventspass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     restart: always
 
 volumes:
