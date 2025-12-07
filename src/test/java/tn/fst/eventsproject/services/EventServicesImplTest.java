@@ -144,10 +144,10 @@ class EventServicesImplTest {
         when(eventRepository.findByDateDebutBetween(any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(Collections.singletonList(e));
 
-        List<Logistics> res = eventServices.getLogisticsDates(LocalDate.now(), LocalDate.now().plusDays(2));
+    List<Logistics> res = eventServices.getLogisticsDates(LocalDate.now(), LocalDate.now().plusDays(2));
 
-        assertNotNull(res);
-        assertTrue(res.isEmpty());
+    assertNotNull(res);
+    assertTrue(res.isEmpty());
     }
 
     @Test
