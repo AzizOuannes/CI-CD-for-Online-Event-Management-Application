@@ -1,0 +1,22 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <!--
+    Minimal settings.xml to provide Nexus server credentials for 'nexus' server id.
+    The <id> here must match the <id> used in your POM's distributionManagement repository
+    or be used with -DaltDeploymentRepository when running mvn deploy.
+
+    IMPORTANT: Do NOT commit real credentials to source control. This file is a template
+    placed under ci/ to be uploaded to Jenkins as a "Secret file" credential (id: maven-settings).
+  -->
+
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>REPLACE_WITH_NEXUS_USERNAME</username>
+      <password>REPLACE_WITH_NEXUS_PASSWORD</password>
+    </server>
+  </servers>
+
+</settings>
