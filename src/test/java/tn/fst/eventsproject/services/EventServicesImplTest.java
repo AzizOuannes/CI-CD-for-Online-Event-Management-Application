@@ -106,6 +106,116 @@ class EventServicesImplTest {
     }
 
     @Test
+    void addAffectEvenParticipant_initializesParticipantEventsWhenNull() {
+        // event has one participant reference
+        Participant ref = new Participant();
+        ref.setIdPart(1);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(ref);
+        event.setParticipants(participants);
+
+        // repository returns a participant with null events
+        Participant loaded = new Participant();
+        loaded.setIdPart(1);
+        loaded.setNom("Tounsi");
+        loaded.setPrenom("Ahmed");
+        loaded.setTache(Tache.ORGANISATEUR);
+        loaded.setEvents(null);
+
+        when(participantRepository.findById(1)).thenReturn(Optional.of(loaded));
+        when(eventRepository.save(event)).thenReturn(event);
+
+        Event res = eventServices.addAffectEvenParticipant(event);
+
+        assertEquals(event, res);
+        assertNotNull(loaded.getEvents());
+        assertTrue(loaded.getEvents().contains(event));
+        verify(participantRepository, times(1)).findById(1);
+        verify(eventRepository, times(1)).save(event);
+    }
+
+    @Test
+    void addAffectEvenParticipant_addsToExistingParticipantEvents() {
+        // event has one participant reference
+        Participant ref = new Participant();
+        ref.setIdPart(1);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(ref);
+        event.setParticipants(participants);
+
+        // repository returns a participant with existing events set
+        Participant loaded = new Participant();
+        loaded.setIdPart(1);
+        Set<Event> existing = new HashSet<>();
+        Event e2 = new Event();
+        e2.setDescription("Existing");
+        existing.add(e2);
+        loaded.setEvents(existing);
+
+        when(participantRepository.findById(1)).thenReturn(Optional.of(loaded));
+        when(eventRepository.save(event)).thenReturn(event);
+
+        Event res = eventServices.addAffectEvenParticipant(event);
+
+        assertEquals(event, res);
+        assertTrue(loaded.getEvents().contains(event));
+        assertTrue(loaded.getEvents().contains(e2));
+        verify(eventRepository, times(1)).save(event);
+    }
+
+    @Test
+    void addAffectEvenParticipant_byId_whenEventsAlreadyPresent_addsToExistingSet() {
+        Event existing = new Event();
+        existing.setDescription("Existing");
+        Set<Event> existingEvents = new HashSet<>();
+        existingEvents.add(existing);
+        participant.setEvents(existingEvents);
+
+        when(participantRepository.findById(1)).thenReturn(Optional.of(participant));
+        when(eventRepository.save(event)).thenReturn(event);
+
+        Event res = eventServices.addAffectEvenParticipant(event, 1);
+
+        assertEquals(event, res);
+        assertTrue(participant.getEvents().contains(event));
+        assertTrue(participant.getEvents().contains(existing));
+        verify(eventRepository, times(1)).save(event);
+    }
+
+    @Test
+    void addAffectLog_whenEventLogisticsNotNull_addsToExistingSet() {
+        Logistics log = new Logistics();
+        log.setIdLog(6);
+        log.setDescription("L2");
+        log.setReserve(false);
+        log.setPrixUnit(3f);
+        log.setQuantite(1);
+
+        Logistics already = new Logistics();
+        already.setIdLog(7);
+        already.setDescription("Lx");
+        already.setReserve(true);
+        already.setPrixUnit(2f);
+        already.setQuantite(4);
+
+        Event e = new Event();
+        e.setDescription("Desc2");
+        Set<Logistics> logs = new HashSet<>();
+        logs.add(already);
+        e.setLogistics(logs);
+
+        when(eventRepository.findByDescription("Desc2")).thenReturn(e);
+        when(logisticsRepository.save(log)).thenReturn(log);
+
+        Logistics res = eventServices.addAffectLog(log, "Desc2");
+
+        assertEquals(log, res);
+        assertTrue(e.getLogistics().contains(log));
+        assertTrue(e.getLogistics().contains(already));
+        verify(logisticsRepository, times(1)).save(log);
+    }
+
+    @Test
     void addAffectLog_whenEventLogisticsNull_initializesSetAndSaves() {
         Logistics log = new Logistics();
         log.setIdLog(5);
