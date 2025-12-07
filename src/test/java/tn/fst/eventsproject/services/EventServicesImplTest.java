@@ -183,6 +183,41 @@ class EventServicesImplTest {
     }
 
     @Test
+    void getLogisticsDates_whenNoEvents_returnsEmptyList() {
+        when(eventRepository.findByDateDebutBetween(any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<Logistics> res = eventServices.getLogisticsDates(LocalDate.now(), LocalDate.now().plusDays(1));
+
+        assertNotNull(res);
+        assertTrue(res.isEmpty());
+        verify(eventRepository, times(1)).findByDateDebutBetween(any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    void calculCout_whenNoReservedLogistics_setsZeroAndSaves() {
+        Logistics l = new Logistics();
+        l.setReserve(false);
+        l.setPrixUnit(10f);
+        l.setQuantite(5);
+
+        Event e = new Event();
+        e.setDescription("Evt2");
+        Set<Logistics> logs = new HashSet<>();
+        logs.add(l);
+        e.setLogistics(logs);
+
+        when(eventRepository.findByParticipants_NomAndParticipants_PrenomAndParticipants_Tache(anyString(), anyString(), any(Tache.class)))
+                .thenReturn(Collections.singletonList(e));
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        eventServices.calculCout();
+
+        assertEquals(0f, e.getCout());
+        verify(eventRepository, atLeastOnce()).save(e);
+    }
+
+    @Test
     void calculCout_accumulatesReservedLogisticsAndSavesEvent() {
         Logistics l1 = new Logistics();
         l1.setReserve(true);
