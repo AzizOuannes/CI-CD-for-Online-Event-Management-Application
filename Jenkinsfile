@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Récupération du projet (Git)') {
       steps {
-        // Checkout via HTTPS (public repo) — no credentials needed
+        // checkout the main branch
         git branch: 'main', url: 'https://github.com/AzizOuannes/CI-CD-for-Online-Event-Management-Application.git'
       }
     }
@@ -36,9 +36,7 @@ pipeline {
 
     stage('Qualité de code (SonarQube)') {
       steps {
-        // SonarQube analysis is mandatory: requires a Sonar token stored in Jenkins credentials (kind: Secret text, id: sonar-token)
         withCredentials([string(credentialsId: "${SONAR_CREDENTIALS}", variable: 'SONAR_TOKEN')]) {
-          // SONAR_HOST_URL can be configured as an environment variable in Jenkins global config or here
           sh 'mvn -B sonar:sonar -Dsonar.login=$SONAR_TOKEN -DskipTests=true'
         }
       }
@@ -46,7 +44,7 @@ pipeline {
 
     stage('Préparation de la version à distribuer') {
       steps {
-        // package the application (jar) - tests already ran above
+        // package the application (jar)
         sh 'mvn -B -DskipTests=true package'
         archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
       }
@@ -54,8 +52,7 @@ pipeline {
 
     stage('Mise en place de la version (Nexus)') {
       steps {
-        // Use a settings.xml stored as a Secret File in Jenkins (id: maven-settings)
-        // The settings.xml must contain the <server><id> matching the repository id used in your pom.xml
+
         withCredentials([file(credentialsId: "${MAVEN_SETTINGS}", variable: 'MAVEN_SETTINGS_FILE')]) {
           sh 'mvn -B -s $MAVEN_SETTINGS_FILE deploy -DskipTests=true'
         }
@@ -91,7 +88,6 @@ pipeline {
 
     stage('Démarrage (docker-compose: app + MySQL)') {
       steps {
-        // This expects a docker-compose.yml that starts the app and a MySQL container
         // Prefer Docker Compose v2 ('docker compose'); fall back to v1 ('docker-compose')
         sh '''
           # Choose an available host port for the app if APP_PORT is not provided

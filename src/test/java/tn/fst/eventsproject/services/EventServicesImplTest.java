@@ -134,7 +134,7 @@ class EventServicesImplTest {
     }
 
     @Test
-    void getLogisticsDates_whenEventHasEmptyLogistics_returnsNull() {
+    void getLogisticsDates_whenEventHasEmptyLogistics_returnsEmptyList() {
         Event e = new Event();
         e.setDescription("Eempty");
         e.setDateDebut(LocalDate.now());
@@ -146,7 +146,8 @@ class EventServicesImplTest {
 
         List<Logistics> res = eventServices.getLogisticsDates(LocalDate.now(), LocalDate.now().plusDays(2));
 
-        assertNull(res);
+        assertNotNull(res);
+        assertTrue(res.isEmpty());
     }
 
     @Test
