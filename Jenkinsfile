@@ -38,7 +38,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: "${SONAR_CREDENTIALS}", variable: 'SONAR_TOKEN')]) {
           // Generate JaCoCo coverage report and run Sonar analysis; do NOT skip tests
-          sh 'mvn -B clean verify sonar:sonar -Dsonar.login=$SONAR_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
+          sh 'mvn -B clean verify sonar:sonar -Dsonar.login=$SONAR_TOKEN -Dsonar.projectVersion=${BUILD_NUMBER} -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
         }
       }
     }
