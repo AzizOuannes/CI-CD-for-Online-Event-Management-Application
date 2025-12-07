@@ -37,7 +37,8 @@ pipeline {
     stage('Qualité de code (SonarQube)') {
       steps {
         withCredentials([string(credentialsId: "${SONAR_CREDENTIALS}", variable: 'SONAR_TOKEN')]) {
-          sh 'mvn -B sonar:sonar -Dsonar.login=$SONAR_TOKEN -DskipTests=true'
+          // Generate JaCoCo coverage report and run Sonar analysis; do NOT skip tests
+          sh 'mvn -B clean verify sonar:sonar -Dsonar.login=$SONAR_TOKEN -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
         }
       }
     }
