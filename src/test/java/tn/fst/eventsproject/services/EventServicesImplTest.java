@@ -164,6 +164,19 @@ class EventServicesImplTest {
     }
 
     @Test
+    void addAffectEvenParticipant_withEmptyParticipants_savesEvent() {
+        event.setParticipants(new HashSet<>());
+
+        when(eventRepository.save(event)).thenReturn(event);
+
+        Event res = eventServices.addAffectEvenParticipant(event);
+
+        assertEquals(event, res);
+        verify(eventRepository, times(1)).save(event);
+        verifyNoInteractions(participantRepository);
+    }
+
+    @Test
     void addAffectEvenParticipant_byId_whenEventsAlreadyPresent_addsToExistingSet() {
         Event existing = new Event();
         existing.setDescription("Existing");

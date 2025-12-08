@@ -17,11 +17,11 @@ import java.util.Set;
 public class Participant implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    int idPart;
-    String nom;
-    String prenom;
+    private int idPart;
+    private String nom;
+    private String prenom;
     @Enumerated(EnumType.STRING)
-    Tache tache;
+    private Tache tache;
     @ManyToMany
     private Set<Event> events;
 
